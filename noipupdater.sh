@@ -1,14 +1,17 @@
 #!/bin/bash
 
-# No-IP uses emails as passwords, so make sure that you encode the @ as %40
+# No-IP uses your email address for the username. Both the username and password
+# must be URL encoded. URL encoder: http://meyerweb.com/eric/tools/dencoder/
 USERNAME=username
 PASSWORD=password
+# Multiple hosts associated with a single IP address can be entered by
+# separating them with commas. Expample: HOST=host1.domain.org,host2.domain.org
 HOST=hostsite
 LOGFILE=logdir/noip.log
 STOREDIPFILE=configdir/current_ip
 USERAGENT="Simple Bash No-IP Updater/0.4 antoniocs@gmail.com"
 
-if [ ! -e $STOREDIPFILE ]; then 
+if [ ! -e $STOREDIPFILE ]; then
 	touch $STOREDIPFILE
 fi
 
