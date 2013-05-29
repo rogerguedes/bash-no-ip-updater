@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Defines
+
 # No-IP uses your email address for the username. Both the username and password
 # must be URL encoded. URL encoder: http://meyerweb.com/eric/tools/dencoder/
 USERNAME=username
@@ -14,6 +16,28 @@ STOREDIPFILE=configdir/current_ip
 # Setting FORCEUPDATEFREQ=0 will disable this feature
 FORCEUPDATEFREQ=864000
 USERAGENT="Simple Bash No-IP Updater/0.4 antoniocs@gmail.com"
+
+# Functions
+
+# IP Validator
+# http://www.linuxjournal.com/content/validating-ip-address-bash-script
+function valid_ip() {
+    local  ip=$1
+    local  stat=1
+
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip=($ip)
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+            && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        stat=$?
+    fi
+    return $stat
+}
+
+# Program
 
 # Check log for last successful ip change to No-IP and set FUPD flag if an
 # update is necessary.  (Note: 'nochg' return code is not enough for No-IP to be
@@ -38,9 +62,34 @@ fi
 if [ ! -e $STOREDIPFILE ]; then
 	touch $STOREDIPFILE
 fi
-
-NEWIP=$(wget -O - -o /dev/null http://icanhazip.com)
 STOREDIP=$(cat $STOREDIPFILE)
+
+COUNTER=1
+while ! valid_ip $NEWIP; do
+    case $COUNTER in
+        1)
+            NEWIP=$(wget -O - -o /dev/null http://icanhazip.com | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+            let COUNTER++
+            ;;
+        2)
+            NEWIP=$(wget -O - -o /dev/null http://checkip.dyndns.org | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+            let COUNTER++
+            ;;
+        3)
+            NEWIP=$(wget -O - -o /dev/null http://wtfismyip.com/text | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+            let COUNTER++
+            ;;
+        4)
+            NEWIP=$(wget -O - -o /dev/null http://www.networksecuritytoolkit.org/nst/tools/ip.php | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+            let COUNTER++
+            ;;
+        *)
+            LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] Could not find current IP"
+            echo $LOGLINE >> $LOGFILE
+            exit 1
+            ;;
+    esac
+done
 
 if [ $FUPD == true ]; then
     wget -q -o /dev/null --user-agent="$USERAGENT" --no-check-certificate "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=127.0.0.1"
