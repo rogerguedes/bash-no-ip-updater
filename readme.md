@@ -1,24 +1,24 @@
-README
-======
+Bash No-IP Updater
+------------------
 
-Bash script to update the ip of an account on no-ip.com
+A bash script to update the IP address of a no-ip.com hostname.
 
-How to use
-----------
+__Usage__
 
-* Configure the script with the correct username, password, hostname, cache file (current IP), and log file
-* Make it executable (`chmod +x`)
-* Run it (`./noipupdater.sh`)
+1.  Configure the script with the correct username, password, hostname, IP cache file, and log file
+2.  Make it executable (`chmod +x`)
+3.  Run it (`./noipupdater.sh`)
 
-Tips!
------
+__Automation__
 
-Place this in your cron file:
+Include the script in your cron file (`crontab -e`):
 
-    */15 * * * * /dir/where/file/is/noipupdater.sh
+Run script once each day at 5:30am:  
+    `30 5 * * * /path/to/noipupdater.sh`
 
-This will run the script every fifteen minutes.
+Run the script every fifteen minutes:  
+    `*/15 * * * * /path/to/noipupdater.sh`
 
-Note: Some users have had problem executing the cron. If that is your case, remove the `.sh` extension.
+Note: If the cron job doesn't execute correctly, try removing the `.sh` extension.
 
-Happy updating!
+Based on the [Simple Bash No-IP Updater by AntonioCS](https://github.com/AntonioCS/no-ip.com-bash-updater)
