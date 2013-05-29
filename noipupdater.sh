@@ -15,7 +15,7 @@ STOREDIPFILE=configdir/current_ip
 # prevent hostname expiration. Enter the value in seconds: 864000 = 10days
 # Setting FORCEUPDATEFREQ=0 will disable this feature
 FORCEUPDATEFREQ=864000
-USERAGENT="Simple Bash No-IP Updater/0.4 antoniocs@gmail.com"
+USERAGENT="Bash No-IP Updater/0.5 mowerm@gmail.com"
 
 # Functions
 
