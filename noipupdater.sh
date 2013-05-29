@@ -47,15 +47,15 @@ if [ $FUPD == true ]; then
     sleep 5
     RESULT=$(wget -O - -o /dev/null --user-agent="$USERAGENT" --no-check-certificate "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 
-    LOGLINE="[$(date +"%Y-%m-%d %H:%M:%S")] $RESULT"
+    LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] $RESULT"
 	echo $NEWIP > $STOREDIPFILE
 elif [ "$NEWIP" != "$STOREDIP" ]; then
 	RESULT=$(wget -O - -o /dev/null --user-agent="$USERAGENT" --no-check-certificate "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 
-	LOGLINE="[$(date +"%Y-%m-%d %H:%M:%S")] $RESULT"
+	LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] $RESULT"
 	echo $NEWIP > $STOREDIPFILE
 else
-	LOGLINE="[$(date +"%Y-%m-%d %H:%M:%S")] No IP change"
+	LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] No IP change"
 fi
 
 echo $LOGLINE >> $LOGFILE
