@@ -43,16 +43,14 @@ function valid_ip() {
 # update is necessary.  (Note: 'nochg' return code is not enough for No-IP to be
 # satisfied; must be 'good' return code)
 FUPD=false
-TODAY=$(date '+%s')
+NOW=$(date '+%s')
 if [ $FORCEUPDATEFREQ -eq 0 ]; then
     FUPD=false
 elif [ -e $LOGFILE ] && tac $LOGFILE | grep -q -m1 'good'; then
-    LASTGC=$(tac $LOGFILE | grep -m1 'good')
-    Y1=$(echo $LASTGC | cut -c 2- | cut -d "-" -f 1)
-    M1=$(echo $LASTGC | cut -c 2- | cut -d "-" -f 2)
-    D1=$(echo $LASTGC | cut -c 2- | cut -d "-" -f 3 | cut -d " " -f 1)
-    LASTCONTACT=$(date -d "$Y1-$M1-$D1" '+%s')
-    if [ `expr $TODAY - $LASTCONTACT` -gt $FORCEUPDATEFREQ ]; then
+    GOODLINE=$(tac $LOGFILE | grep -m1 'good')
+    LASTGC=$([[ $GOODLINE =~ \[(.*?)\] ]] && echo "${BASH_REMATCH[1]}")
+    LASTCONTACT=$(date -d "$LASTGC" '+%s')
+    if [ `expr $NOW - $LASTCONTACT` -gt $FORCEUPDATEFREQ ]; then
         FUPD=true
     fi
 else
