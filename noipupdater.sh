@@ -66,19 +66,19 @@ COUNTER=1
 while ! valid_ip $NEWIP; do
     case $COUNTER in
         1)
-            NEWIP=$(wget -O - -o /dev/null http://icanhazip.com | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+            NEWIP=$(curl -s http://icanhazip.com | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
             let COUNTER++
             ;;
         2)
-            NEWIP=$(wget -O - -o /dev/null http://checkip.dyndns.org | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+            NEWIP=$(curl -s http://checkip.dyndns.org | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
             let COUNTER++
             ;;
         3)
-            NEWIP=$(wget -O - -o /dev/null http://wtfismyip.com/text | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+            NEWIP=$(curl -s http://wtfismyip.com/text | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
             let COUNTER++
             ;;
         4)
-            NEWIP=$(wget -O - -o /dev/null http://www.networksecuritytoolkit.org/nst/tools/ip.php | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+            NEWIP=$(curl -s http://www.networksecuritytoolkit.org/nst/tools/ip.php | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
             let COUNTER++
             ;;
         *)
@@ -90,14 +90,14 @@ while ! valid_ip $NEWIP; do
 done
 
 if [ $FUPD == true ]; then
-    wget -q -o /dev/null --user-agent="$USERAGENT" --no-check-certificate "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=127.0.0.1"
+    curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=127.0.0.1" &> /dev/null
     sleep 5
-    RESULT=$(wget -O - -o /dev/null --user-agent="$USERAGENT" --no-check-certificate "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
+    RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 
     LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] $RESULT"
 	echo $NEWIP > $STOREDIPFILE
 elif [ "$NEWIP" != "$STOREDIP" ]; then
-	RESULT=$(wget -O - -o /dev/null --user-agent="$USERAGENT" --no-check-certificate "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
+	RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 
 	LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] $RESULT"
 	echo $NEWIP > $STOREDIPFILE
