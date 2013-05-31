@@ -2,20 +2,28 @@
 
 # Defines
 
-# No-IP uses your email address for the username. Both the username and password
-# must be URL encoded. URL encoder: http://meyerweb.com/eric/tools/dencoder/
-USERNAME=username
-PASSWORD=password
-# Multiple hosts associated with a single IP address can be entered by
-# separating them with commas. Expample: HOST=host1.domain.org,host2.domain.org
-HOST=hostsite
-LOGFILE=logdir/noip.log
-STOREDIPFILE=configdir/current_ip
-# Force script to update No-IP after a number of days have passed. This helps
-# prevent hostname expiration. Enter the value in seconds: 864000 = 10days
-# Setting FORCEUPDATEFREQ=0 will disable this feature
-FORCEUPDATEFREQ=864000
-USERAGENT="Bash No-IP Updater/0.5 mowerm@gmail.com"
+USERAGENT="Bash No-IP Updater/0.6 mowerm@gmail.com"
+
+source config
+
+if [ ! -d $LOGDIR ]; then
+    mkdir -p $LOGDIR
+    if [ $? -ne 0 ]; then
+        echo "Log directory could not be created or accessed."
+        exit 1
+    fi
+fi
+
+LOGFILE=${LOGDIR%/}/noip.log
+IPFILE=${LOGDIR%/}/last_ip
+if [ ! -e $LOGFILE ] || [ ! -e $IPFILE ]; then
+	touch $LOGFILE $IPFILE
+    if [ $? -ne 0 ]; then
+        echo "Log files not writable."
+        exit 1
+    fi
+fi
+STOREDIP=$(cat $IPFILE)
 
 # Functions
 
@@ -57,11 +65,6 @@ else
     FUPD=true
 fi
 
-if [ ! -e $STOREDIPFILE ]; then
-	touch $STOREDIPFILE
-fi
-STOREDIP=$(cat $STOREDIPFILE)
-
 COUNTER=1
 while ! valid_ip $NEWIP; do
     case $COUNTER in
@@ -95,12 +98,12 @@ if [ $FUPD == true ]; then
     RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 
     LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] $RESULT"
-	echo $NEWIP > $STOREDIPFILE
+	echo $NEWIP > $IPFILE
 elif [ "$NEWIP" != "$STOREDIP" ]; then
 	RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 
 	LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] $RESULT"
-	echo $NEWIP > $STOREDIPFILE
+	echo $NEWIP > $IPFILE
 else
 	LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] No IP change"
 fi
