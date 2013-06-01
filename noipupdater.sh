@@ -4,7 +4,25 @@
 
 USERAGENT="Bash No-IP Updater/0.6 mowerm@gmail.com"
 
-source config
+if [ -e './config' ]; then
+    source ./config
+else
+    echo "Config file not found."
+    exit 1
+fi
+
+if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+   echo "USERNAME or PASSWORD has not been set in the config file."
+   exit 1
+fi
+
+USERNAME=$(echo -ne $USERNAME | xxd -plain | tr -d '\n' | sed 's/\(..\)/%\1/g')
+PASSWORD=$(echo -ne $PASSWORD | xxd -plain | tr -d '\n' | sed 's/\(..\)/%\1/g')
+
+if ! [[ "$FORCEUPDATEFREQ" =~ ^[0-9]+$ ]] ; then
+   echo "FORCEUPDATEFREQ has not been set correctly in the config file"
+   exit 1
+fi
 
 if [ ! -d $LOGDIR ]; then
     mkdir -p $LOGDIR
@@ -19,9 +37,12 @@ IPFILE=${LOGDIR%/}/last_ip
 if [ ! -e $LOGFILE ] || [ ! -e $IPFILE ]; then
 	touch $LOGFILE $IPFILE
     if [ $? -ne 0 ]; then
-        echo "Log files not writable."
+        echo "Log files could not be created. Is the log directory writable?"
         exit 1
     fi
+elif [ ! -w $LOGFILE ] || [ ! -w $IPFILE ]; then
+    echo "Log files not writable."
+    exit 1
 fi
 STOREDIP=$(cat $IPFILE)
 
