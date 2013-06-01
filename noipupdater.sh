@@ -2,7 +2,7 @@
 
 # Defines
 
-USERAGENT="Bash No-IP Updater/0.6 mowerm@gmail.com"
+USERAGENT="Bash No-IP Updater/0.7 mowerm@gmail.com"
 
 if [ -e './config' ]; then
     source ./config
@@ -35,7 +35,7 @@ fi
 LOGFILE=${LOGDIR%/}/noip.log
 IPFILE=${LOGDIR%/}/last_ip
 if [ ! -e $LOGFILE ] || [ ! -e $IPFILE ]; then
-	touch $LOGFILE $IPFILE
+    touch $LOGFILE $IPFILE
     if [ $? -ne 0 ]; then
         echo "Log files could not be created. Is the log directory writable?"
         exit 1
@@ -75,8 +75,8 @@ FUPD=false
 NOW=$(date '+%s')
 if [ $FORCEUPDATEFREQ -eq 0 ]; then
     FUPD=false
-elif [ -e $LOGFILE ] && tac $LOGFILE | grep -q -m1 'good'; then
-    GOODLINE=$(tac $LOGFILE | grep -m1 'good')
+elif [ -e $LOGFILE ] && tac $LOGFILE | grep -q -m1 '(good)'; then
+    GOODLINE=$(tac $LOGFILE | grep -m1 '(good)')
     LASTGC=$([[ $GOODLINE =~ \[(.*?)\] ]] && echo "${BASH_REMATCH[1]}")
     LASTCONTACT=$(date -d "$LASTGC" '+%s')
     if [ `expr $NOW - $LASTCONTACT` -gt $FORCEUPDATEFREQ ]; then
@@ -117,18 +117,48 @@ if [ $FUPD == true ]; then
     curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=127.0.0.1" &> /dev/null
     sleep 5
     RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
-
-    LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] $RESULT"
-	echo $NEWIP > $IPFILE
 elif [ "$NEWIP" != "$STOREDIP" ]; then
-	RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
-
-	LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] $RESULT"
-	echo $NEWIP > $IPFILE
+    RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 else
-	LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] No IP change"
+    RESULT="nochglocal"
 fi
 
+LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
+SRESULT=$([[ $RESULT =~ (^[a-z\!0-9]+) ]] && echo "${BASH_REMATCH[1]}")
+case $SRESULT in
+    "good")
+        LOGLINE="$LOGDATE (good) DNS hostname(s) successfully updated to $NEWIP."
+        ;;
+    "nochg")
+        LOGLINE="$LOGDATE (nochg) IP address is current: $NEWIP; no update performed."
+        ;;
+    "nochglocal")
+        LOGLINE="$LOGDATE (nochglocal) IP address is current: $NEWIP; no update performed."
+        ;;
+    "nohost")
+        LOGLINE="$LOGDATE (nohost) Hostname supplied does not exist under specified account. Revise config file."
+        ;;
+    "badauth")
+        LOGLINE="$LOGDATE (badauth) Invalid username password combination."
+        ;;
+    "badagent")
+        LOGLINE="$LOGDATE (badagent) Client disabled - No-IP is no longer allowing requests from this update script."
+        ;;
+    "!donator")
+        LOGLINE="$LOGDATE (!donator) An update request was sent including a feature that is not available."
+        ;;
+    "abuse")
+        LOGLINE="$LOGDATE (abuse) Username is blocked due to abuse."
+        ;;
+    "911")
+        LOGLINE="$LOGDATE (911) A fatal error on our side such as a database outage. Retry the update no sooner 30 minutes."
+        ;;
+    *)
+        LOGLINE="$LOGDATE (error) Could not understand the response from No-IP. The DNS update server may be down."
+        ;;
+esac
+
+echo $NEWIP > $IPFILE
 echo $LOGLINE >> $LOGFILE
 
 exit 0
