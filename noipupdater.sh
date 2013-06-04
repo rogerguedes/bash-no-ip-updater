@@ -151,7 +151,7 @@ case $SRESULT in
         LOGLINE="$LOGDATE (abuse) Username is blocked due to abuse."
         ;;
     "911")
-        LOGLINE="$LOGDATE (911) A fatal error on our side such as a database outage. Retry the update no sooner 30 minutes."
+        LOGLINE="$LOGDATE (911) A fatal error on our side such as a database outage. Retry the update in no sooner than 30 minutes."
         ;;
     *)
         LOGLINE="$LOGDATE (error) Could not understand the response from No-IP. The DNS update server may be down."

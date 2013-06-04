@@ -23,6 +23,11 @@ Run script once each day at 5:30am:
 Run the script every fifteen minutes:  
 `*/15 * * * * /path/to/noipupdater.sh`
 
-Note: If the cron job doesn't execute correctly, try removing the `.sh` extension.
+Note: If the cron job doesn't execute correctly, try these suggestions:
 
-Based on the [Simple Bash No-IP Updater by AntonioCS](https://github.com/AntonioCS/no-ip.com-bash-updater)
+1.  Edit /etc/crontab to use bash: SHELL=/bin/bash
+2.  Remove the `.sh` extension
+
+Forked from the [Simple Bash No-IP Updater by AntonioCS](https://github.com/AntonioCS/no-ip.com-bash-updater)
+
+2013 © Matt Mower
