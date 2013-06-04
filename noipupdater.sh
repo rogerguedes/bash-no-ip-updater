@@ -17,9 +17,10 @@
 # Defines
 
 USERAGENT="Bash No-IP Updater/0.7 mowerm@gmail.com"
+CONFIGFILE="$( cd "$( dirname "$0" )" && pwd )/config"
 
-if [ -e './config' ]; then
-    source ./config
+if [ -e $CONFIGFILE ]; then
+    source $CONFIGFILE
 else
     echo "Config file not found."
     exit 1
