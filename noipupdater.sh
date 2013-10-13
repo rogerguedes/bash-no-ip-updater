@@ -139,7 +139,7 @@ else
 fi
 
 LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
-SRESULT=$([[ $RESULT =~ (^[a-z\!0-9]+) ]] && echo "${BASH_REMATCH[1]}")
+SRESULT=$(echo $RESULT | awk '{ print $1 }')
 case $SRESULT in
     "good")
         LOGLINE="$LOGDATE (good) DNS hostname(s) successfully updated to $NEWIP."
