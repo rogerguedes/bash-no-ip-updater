@@ -84,11 +84,32 @@ function valid_ip() {
 
 # Program
 
+NOW=$(date '+%s')
+
+if [ -e $LOGFILE ] && tail -n1 $LOGFILE | grep -q -m1 '(abuse)'; then
+    echo "This account has been flagged for abuse. You need to contact noip.com to resolve"
+    echo "the issue. Once you have confirmed your account is in good standing, remove the"
+    echo "log line containing (abuse) from:"
+    echo "  $LOGFILE"
+    echo "Then, re-run this script."
+    exit 1
+fi
+
+if [ -e $LOGFILE ] && tac $LOGFILE | grep -q -m1 '(911)'; then
+    NINELINE=$(tac $LOGFILE | grep -m1 '(911)')
+    LASTNL=$([[ $NINELINE =~ \[(.*?)\] ]] && echo "${BASH_REMATCH[1]}")
+    LASTCONTACT=$(date -d "$LASTNL" '+%s')
+    if [ `expr $NOW - $LASTCONTACT` -lt 1800 ]; then
+        LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] Response code 911 received less than 30 minutes ago; canceling request."
+        echo $LOGLINE >> $LOGFILE
+        exit 1
+    fi
+fi
+
 # Check log for last successful ip change to No-IP and set FUPD flag if an
 # update is necessary.  (Note: 'nochg' return code is not enough for No-IP to be
 # satisfied; must be 'good' return code)
 FUPD=false
-NOW=$(date '+%s')
 if [ $FORCEUPDATEFREQ -eq 0 ]; then
     FUPD=false
 elif [ -e $LOGFILE ] && tac $LOGFILE | grep -q -m1 '(good)'; then
