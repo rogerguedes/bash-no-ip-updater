@@ -122,24 +122,19 @@ fi
 if [ $FUPD == true ]; then
     curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=127.0.0.1" &> /dev/null
     sleep 5
-    RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
-elif [ "$NEWIP" != "$STOREDIP" ]; then
-    RESULT=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
-else
-    RESULT="nochglocal"
 fi
+RESPONSE=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 
 LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
-SRESULT=$(echo $RESULT | awk '{ print $1 }')
-case $SRESULT in
+RESPONSE_A=$(echo $RESPONSE | awk '{ print $1 }')
+case $RESPONSE_A in
     "good")
-        LOGLINE="$LOGDATE (good) DNS hostname(s) successfully updated to $NEWIP."
+        RESPONSE_B=$(echo $RESPONSE | awk '{ print $2 }')
+        LOGLINE="$LOGDATE (good) DNS hostname(s) successfully updated to $RESPONSE_B."
         ;;
     "nochg")
-        LOGLINE="$LOGDATE (nochg) IP address is current: $NEWIP; no update performed."
-        ;;
-    "nochglocal")
-        LOGLINE="$LOGDATE (nochglocal) IP address is current: $NEWIP; no update performed."
+        RESPONSE_B=$(echo $RESPONSE | awk '{ print $2 }')
+        LOGLINE="$LOGDATE (nochg) IP address is current: $RESPONSE_B; no update performed."
         ;;
     "nohost")
         LOGLINE="$LOGDATE (nohost) Hostname supplied does not exist under specified account. Revise config file."
@@ -168,4 +163,3 @@ echo $NEWIP > $IPFILE
 echo $LOGLINE >> $LOGFILE
 
 exit 0
-
