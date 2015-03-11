@@ -30,7 +30,7 @@ if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
    exit 1
 fi
 
-USERAGENT="Bash No-IP Updater/0.7 "$USERNAME
+USERAGENT="Bash No-IP Updater/0.8 "$USERNAME
 
 USERNAME=$(echo -ne $USERNAME | xxd -plain | tr -d '\n' | sed 's/\(..\)/%\1/g')
 PASSWORD=$(echo -ne $PASSWORD | xxd -plain | tr -d '\n' | sed 's/\(..\)/%\1/g')
