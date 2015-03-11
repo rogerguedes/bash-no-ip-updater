@@ -102,32 +102,22 @@ else
     FUPD=true
 fi
 
-COUNTER=1
-while ! valid_ip $NEWIP; do
-    case $COUNTER in
-        1)
-            NEWIP=$(curl -s http://icanhazip.com | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
-            let COUNTER++
-            ;;
-        2)
-            NEWIP=$(curl -s http://checkip.dyndns.org | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
-            let COUNTER++
-            ;;
-        3)
-            NEWIP=$(curl -s http://wtfismyip.com/text | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
-            let COUNTER++
-            ;;
-        4)
-            NEWIP=$(curl -s http://www.networksecuritytoolkit.org/nst/tools/ip.php | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
-            let COUNTER++
-            ;;
-        *)
-            LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] Could not find current IP"
-            echo $LOGLINE >> $LOGFILE
-            exit 1
-            ;;
-    esac
+GET_IP_URLS[0]="http://icanhazip.com"
+GET_IP_URLS[1]="http://wtfismyip.com/text"
+GET_IP_URLS[2]="http://www.networksecuritytoolkit.org/nst/tools/ip.php"
+GET_IP_URLS[3]="http://checkip.dyndns.org"
+
+GIP_INDEX=0
+while [ -n "${GET_IP_URLS[$GIP_INDEX]}" ] && ! valid_ip $NEWIP; do
+    NEWIP=$(curl -s ${GET_IP_URLS[$GIP_INDEX]} | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+    let GIP_INDEX++
 done
+
+if ! valid_ip $NEWIP; then
+    LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] Could not find current IP"
+    echo $LOGLINE >> $LOGFILE
+    exit 1
+fi
 
 if [ $FUPD == true ]; then
     curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=127.0.0.1" &> /dev/null
