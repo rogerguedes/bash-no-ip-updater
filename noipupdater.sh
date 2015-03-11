@@ -60,7 +60,6 @@ elif [ ! -w $LOGFILE ] || [ ! -w $IPFILE ]; then
     echo "Log files not writable."
     exit 1
 fi
-STOREDIP=$(cat $IPFILE)
 
 # Functions
 
