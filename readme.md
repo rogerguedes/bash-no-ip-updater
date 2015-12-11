@@ -28,6 +28,6 @@ Note: If the cron job doesn't execute correctly, try these suggestions:
 1.  Add this line to your crontab: `SHELL=/bin/bash`
 2.  Remove the `.sh` extension
 
-Forked from the [Simple Bash No-IP Updater by AntonioCS](https://github.com/AntonioCS/no-ip.com-bash-updater)
+Forked from the [Bash No-IP Updater by mdmower](https://github.com/mdmower/bash-no-ip-updater)
 
 2013 © Matt Mower
